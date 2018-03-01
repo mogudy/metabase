@@ -8,7 +8,9 @@
              [string :as str]]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
-            [hiccup.core :refer [h html]]
+            [hiccup
+             [core :refer [h html]]
+             [util :as hutil]]
             [metabase.util :as u]
             [metabase.util
              [ui-logic :as ui-logic]
@@ -185,9 +187,13 @@
 
 ;;; # ------------------------------------------------------------ FORMATTING ------------------------------------------------------------
 
+(defrecord NumericWrapper [num-str]
+  hutil/ToString
+  (to-str [_] num-str))
+
 (defn- format-number
   [n]
-  (cl-format nil (if (integer? n) "~:d" "~,2f") n))
+  (NumericWrapper. (cl-format nil (if (integer? n) "~:d" "~,2f") n)))
 
 (defn- reformat-timestamp [timezone old-format-timestamp new-format-string]
   (f/unparse (f/with-zone (f/formatter new-format-string)
@@ -324,6 +330,19 @@
     (render-to-png html os width)
     (.toByteArray os)))
 
+
+(defn- heading-style-for-type
+  [cell]
+  (if (instance? NumericWrapper cell)
+    bar-th-numeric-style
+    bar-th-style))
+
+(defn- row-style-for-type
+  [cell]
+  (if (instance? NumericWrapper cell)
+    bar-td-style-numeric
+    bar-td-style))
+
 (defn- render-table
   [header+rows]
   [:table {:style (style {:max-width (str "100%"), :white-space :nowrap, :padding-bottom :8px, :border-collapse :collapse})}
@@ -331,7 +350,7 @@
      [:thead
       [:tr
        (for [header-cell header-row]
-         [:th {:style (style bar-td-style bar-th-style {:min-width :60px})}
+         [:th {:style (style (row-style-for-type header-cell) (heading-style-for-type header-cell) {:min-width :60px})}
           (h header-cell)])
        (when bar-width
          [:th {:style (style bar-td-style bar-th-style {:width (str bar-width "%")})}])]])
@@ -339,7 +358,7 @@
     (map-indexed (fn [row-idx {:keys [row bar-width]}]
                    [:tr {:style (style {:color color-gray-3})}
                     (map-indexed (fn [col-idx cell]
-                                   [:td {:style (style bar-td-style (when (and bar-width (= col-idx 1)) {:font-weight 700}))}
+                                   [:td {:style (style (row-style-for-type cell) (when (and bar-width (= col-idx 1)) {:font-weight 700}))}
                                     (h cell)])
                                  row)
                     (when bar-width
@@ -372,13 +391,17 @@
   [remapping-lookup cols include-bar?]
   {:row (for [maybe-remapped-col cols
               :when (show-in-table? maybe-remapped-col)
-              :let [col (if (:remapped_to maybe-remapped-col)
-                          (nth cols (get remapping-lookup (:name maybe-remapped-col)))
-                          maybe-remapped-col)]
+              :let [{:keys [base_type special_type] :as col} (if (:remapped_to maybe-remapped-col)
+                                                               (nth cols (get remapping-lookup (:name maybe-remapped-col)))
+                                                               maybe-remapped-col)
+                    column-name (name (or (:display_name col) (:name col)))]
               ;; If this column is remapped from another, it's already
               ;; in the output and should be skipped
               :when (not (:remapped_from maybe-remapped-col))]
-          (name (or (:display_name col) (:name col))))
+          (if (or (isa? base_type :type/Number)
+                  (isa? special_type :type/Number))
+            (NumericWrapper. column-name)
+            column-name))
    :bar-width (when include-bar? 99)})
 
 (defn- query-results->row-seq
@@ -408,7 +431,7 @@
      (query-results->row-seq timezone remapping-lookup limited-cols (take rows-limit rows) bar-column max-value))))
 
 (defn- strong-limit-text [number]
-  [:strong {:style (style {:color color-gray-3})} (format-number number)])
+  [:strong {:style (style {:color color-gray-3})} (h (format-number number))])
 
 (defn- render-truncation-warning
   [col-limit col-count row-limit row-count]
