@@ -204,7 +204,7 @@
      :content-type content-type
      :file-name    (format "%s.%s" card-name ext)
      :content      (-> attachment-file .toURI .toURL)
-     :description  (format "Full results for '%s'" card-name)}))
+     :description  (format "More results for '%s'" card-name)}))
 
 (defn- result-attachments [results]
   (remove nil?

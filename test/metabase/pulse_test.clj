@@ -78,12 +78,12 @@
 
 (def ^:private csv-attachment
   {:type :attachment, :content-type "text/csv", :file-name "Test card.csv",
-   :content java.net.URL, :description "Full results for 'Test card'", :content-id false})
+   :content java.net.URL, :description "More results for 'Test card'", :content-id false})
 
 (def ^:private xls-attachment
   {:type :attachment, :file-name "Test card.xlsx",
    :content-type "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-   :content java.net.URL, :description "Full results for 'Test card'", :content-id false})
+   :content java.net.URL, :description "More results for 'Test card'", :content-id false})
 
 ;; Basic test, 1 card, 1 recipient
 (expect
@@ -104,7 +104,7 @@
 ;; Basic test, 1 card, 1 recipient, 21 results results in a CSV being attached and a table being sent
 (expect
   (rasta-pulse-email {:body [{"Pulse Name"                      true
-                              "Full results have been included" true
+                              "More results have been included" true
                               "ID</th>"                         true},
                              csv-attachment]})
   (tt/with-temp* [Card                 [{card-id :id}  (checkins-query {:aggregation nil
@@ -119,7 +119,7 @@
                                                         :pulse_channel_id pc-id}]]
     (email-test-setup
      (send-pulse! (retrieve-pulse pulse-id))
-     (et/summarize-multipart-email #"Pulse Name"  #"Full results have been included" #"ID</th>"))))
+     (et/summarize-multipart-email #"Pulse Name"  #"More results have been included" #"ID</th>"))))
 
 ;; Validate pulse queries are limited by qp/default-query-constraints
 (expect
@@ -151,7 +151,7 @@
 ;; Basic test, 1 card, 1 recipient, 19 results, so no attachment
 (expect
   (rasta-pulse-email {:body [{"Pulse Name"                      true
-                              "Full results have been included" false
+                              "More results have been included" false
                               "ID</th>"                         true}]})
   (tt/with-temp* [Card                 [{card-id :id}  (checkins-query {:aggregation nil
                                                                         :limit       19})]
@@ -165,7 +165,7 @@
                                                         :pulse_channel_id pc-id}]]
     (email-test-setup
      (send-pulse! (retrieve-pulse pulse-id))
-     (et/summarize-multipart-email #"Pulse Name"  #"Full results have been included" #"ID</th>"))))
+     (et/summarize-multipart-email #"Pulse Name"  #"More results have been included" #"ID</th>"))))
 
 ;; Pulse should be sent to two recipients
 (expect
@@ -272,7 +272,7 @@
 (expect
   (rasta-alert-email "Metabase alert: Test card has results"
                      [{"Test card.*has results for you to see" true
-                       "Full results have been included"       false}, png-attachment])
+                       "More results have been included"       false}, png-attachment])
   (tt/with-temp* [Card                  [{card-id :id}  (checkins-query {:breakout [["datetime-field" (data/id :checkins :date) "hour"]]})]
                   Pulse                 [{pulse-id :id} {:alert_condition  "rows"
                                                          :alert_first_only false}]
@@ -284,13 +284,13 @@
                                                         :pulse_channel_id pc-id}]]
     (email-test-setup
      (send-pulse! (retrieve-pulse-or-alert pulse-id))
-     (et/summarize-multipart-email #"Test card.*has results for you to see" #"Full results have been included"))))
+     (et/summarize-multipart-email #"Test card.*has results for you to see" #"More results have been included"))))
 
 ;; Rows alert with too much data will attach as CSV and include a table
 (expect
   (rasta-alert-email "Metabase alert: Test card has results"
                      [{"Test card.*has results for you to see" true
-                       "Full results have been included"       true
+                       "More results have been included"       true
                        "ID</th>"                               true},
                       csv-attachment])
   (tt/with-temp* [Card                  [{card-id :id}  (checkins-query {:limit 21
@@ -305,7 +305,7 @@
                                                         :pulse_channel_id pc-id}]]
     (email-test-setup
      (send-pulse! (retrieve-pulse-or-alert pulse-id))
-     (et/summarize-multipart-email #"Test card.*has results for you to see" #"Full results have been included" #"ID</th>"))))
+     (et/summarize-multipart-email #"Test card.*has results for you to see" #"More results have been included" #"ID</th>"))))
 
 ;; Above goal alert with data
 (expect
@@ -490,7 +490,7 @@
        first
        :attachment-bytes-thunk)))
 
-;; Basic slack test, 1 card, 1 recipient channel, verifies that "full results in attachment" text is not present for
+;; Basic slack test, 1 card, 1 recipient channel, verifies that "more results in attachment" text is not present for
 ;; slack pulses
 (tt/expect-with-temp [Card         [{card-id :id}  (checkins-query {:aggregation nil
                                                                     :limit       25})]
