@@ -75,7 +75,7 @@
                      :font-weight     700
                      :color           color-gray-4
                      :border-bottom   (str "1px solid " color-row-border)
-                     :padding-top     :14px
+                     :padding-top     :20px
                      :padding-bottom  :5px}))
 
 ;; TO-DO for @senior: apply this style to headings of numeric columns
