@@ -87,7 +87,7 @@
                      :font-weight     700
                      :color           color-gray-4
                      :border-bottom   (str "1px solid " color-row-border)
-                     :padding-top     :14px
+                     :padding-top     :20px
                      :padding-bottom  :5px}))
 
 (def ^:private ^:const bar-td-style
