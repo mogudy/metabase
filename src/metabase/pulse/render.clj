@@ -326,7 +326,7 @@
 
 (defn- render-table
   [header+rows]
-  [:table {:style (style {:max-width (str "100%"), :white-space :nowrap, :padding-bottom :8px, :border-collapse :collapse, :border-bottom (str "1px solid " color-gray-1)})}
+  [:table {:style (style {:max-width (str "100%"), :white-space :nowrap, :padding-bottom :8px, :border-collapse :collapse})}
    (let [{header-row :row bar-width :bar-width} (first header+rows)]
      [:thead
       [:tr
@@ -777,6 +777,7 @@
                                                 {:border           "1px solid #dddddd"
                                                  :border-radius    :2px
                                                  :background-color :white
+                                                 :width            "500px !important"
                                                  :box-shadow       "0 1px 2px rgba(0, 0, 0, .08)"})))}
                    content]}))
 

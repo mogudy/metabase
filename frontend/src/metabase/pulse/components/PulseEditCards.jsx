@@ -101,7 +101,7 @@ export default class PulseEditCards extends Component {
         notices.push({
           type: "warning",
           head: t`Heads up`,
-          body: t`We'll display part of this table in your Pulse, and add a file attachment with more results, up to 2,000 rows.`,
+          body: t`We'll show the first 10 columns and 20 rows of this table in your Pulse. If you email this, we'll add a file attachment with all columns and up to 2,000 rows.`,
         });
       }
       if (cardPreview.pulse_card_type == null && !hasAttachment) {
